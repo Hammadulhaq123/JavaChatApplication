@@ -1,16 +1,26 @@
 package you.chat;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-public class Window extends JFrame implements ActionListener {
+public class ClientPanel extends JFrame implements ActionListener {
+
+    //Creating userMessage text field globally so that we can take its value out in the action listener:
+    JTextField userMessage;
+    //Creating the message panel globally to access it in the action listener function:
+    JPanel messagePanel;
+    //Creating a vertical box to align messages vertically:
+    Box verticalBox = Box.createVerticalBox();
 
     //Function to create the top panel of the interface:
-    public void createPanel(){
+    public void topPanel(){
         JPanel topPanel = new JPanel();
         //We need to set the position of the image at the panel:
         //For that we are going to set the layout of the panel to null so that it takes our self-made layout:
@@ -36,7 +46,7 @@ public class Window extends JFrame implements ActionListener {
         topPanel.add(backBtn);
         /*----------------------------------------*/
         //Using ImageIcon class to convert the image into icons in our directory:
-        ImageIcon userImage = new ImageIcon(ClassLoader.getSystemResource("icons/1.png"));
+        ImageIcon userImage = new ImageIcon(ClassLoader.getSystemResource("icons/2.png"));
         //Using Image class to scale our image to our précised sizing:
         Image scaledUserImage = userImage.getImage().getScaledInstance(40,40,Image.SCALE_DEFAULT);
         //Since we cannot set the scaled image directly to the JLabel therefore we have to convert into icon for that:
@@ -79,8 +89,8 @@ public class Window extends JFrame implements ActionListener {
 
         /*-----------------------------*/
         //Label for user name
-        JLabel userLabel = new JLabel("UserName");
-        userLabel.setBounds(40, 12, 120, 12);
+        JLabel userLabel = new JLabel("Client");
+        userLabel.setBounds(40, 12, 150, 15);
         userLabel.setForeground(Color.WHITE);
         userLabel.setFont(new Font("SAN-SERIF", Font.BOLD, 16));
         topPanel.add(userLabel);
@@ -102,40 +112,104 @@ public class Window extends JFrame implements ActionListener {
                 System.exit(0);
             }
         });
-
-
-
-    }
-
-    //This function is a container to all the basics related to GUI:
-    public void guiBasics(){
-        //Setting the size:
-        setSize(400, 650);
-        //Setting the location:
-        setLocation(250, 50);
-        //Changing the background color of the interface:
-        getContentPane().setBackground(Color.DARK_GRAY);
-        //Setting the layout to null initially will change it later:
-        setLayout(null);
-
-        //Using the topPanel function so that it instantiate:
-        this.createPanel();
-
-        //This function ends the whole program when user click on the cancel mark on the header of the interface!
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
 
+
+    //Function to create the messagePanel:
+    public void messagePanel(){
+        messagePanel = new JPanel();
+        //changing the background of the top panel:
+        messagePanel.setBackground(new Color(105,105,105));
+        //Setting the layout and putting the top Panel at the top:
+        messagePanel.setBounds(5,55, 390, 540);
+        messagePanel.setBorder(new EmptyBorder(10,10,10,10));
+        //Adding the panel into the Gui:
+        add(messagePanel);
+    }
+
+    //Function to create the sendPanel:
+    public void sendPanel(){
+        JPanel sendPanel = new JPanel();
+        //We need to set the position of the image at the panel:
+        //For that we are going to set the layout of the panel to null so that it takes our self-made layout:
+        sendPanel.setLayout(null);
+        //changing the background of the top panel:
+        sendPanel.setBackground(Color.darkGray);
+        //Setting the layout and putting the top Panel at the top:
+        sendPanel.setBounds(0,595, 400, 55);
+        //Adding the panel into the Gui:
+        add(sendPanel);
+
+        //Creating a TextField and Send Button inside the send Panel:
+        userMessage = new JTextField();
+        userMessage.setBounds(5, 5, 280, 45);
+        userMessage.setBackground(new Color(105,105,105));
+        userMessage.setForeground(Color.WHITE);
+        userMessage.setFont(new Font("SAN_SERIF", Font.PLAIN, 16));
+        userMessage.setBorder(new EmptyBorder(10,10,10,10));
+        sendPanel.add(userMessage);
+
+        JButton sendBtn = new JButton("Send");
+        sendBtn.setBounds(290,5, 105, 45);
+        sendBtn.setBackground(new Color(10,102,194));
+        sendBtn.setForeground(Color.WHITE);
+        sendBtn.setFont(new Font("SAN_SERIF", Font.BOLD, 14));
+        sendBtn.addActionListener(this);
+        sendPanel.add(sendBtn);
+
+    }
     //This is just to override the abstract method of the class actionPerformed:
     public void actionPerformed(ActionEvent ae){
+        String sendMessage = userMessage.getText();
+        messagePanel.setLayout(new BorderLayout());
+        JPanel sendMessagePanel = formatMessagePanel(sendMessage);
+
+        JPanel rightSide = new JPanel(new BorderLayout());
+        rightSide.add(sendMessagePanel, BorderLayout.LINE_END);
+
+        verticalBox.add(rightSide);
+        verticalBox.add(Box.createVerticalStrut(15));
+        rightSide.setBackground(new Color(105,105,105));
+        sendMessagePanel.setBackground(new Color(105,105,105));
+
+
+        messagePanel.add(verticalBox, BorderLayout.PAGE_START);
+
+        repaint();
+        invalidate();
+        validate();
+
+        userMessage.setText("");
+    }
+    public static JPanel formatMessagePanel(String message){
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
+
+
+        JLabel sendMessageLabel = new JLabel("<html><p style= \" width: 150px; \">"+message+"</p></html>");
+        sendMessageLabel.setBackground(new Color(10,102,194));
+        sendMessageLabel.setForeground(Color.WHITE);
+        //Without setting setOpaque to true we cannot change the background in this case!
+        sendMessageLabel.setOpaque(true);
+        //setBorder is used for spacing:
+        sendMessageLabel.setBorder(new EmptyBorder(10,10,10,10));
+        sendMessageLabel.setFont(new Font("SAN_SERIF", Font.PLAIN, 14));
+        messagePanel.add(sendMessageLabel);
+
+        //For Time of the message:
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+
+        JLabel time = new JLabel();
+        time.setText(sdf.format(cal.getTime()));
+        time.setFont(new Font("SAN_SERIF", Font.BOLD, 10));
+        time.setForeground(Color.WHITE);
+        messagePanel.add(time);
+
+
+        return messagePanel;
     }
 
 
-    //Window class constructor:
-    public Window(){
-        //using the guiBasics function that we created:
-        this.guiBasics();
-        //setting the visibility to true:
-        super.setVisible(true);
-    }
 }
