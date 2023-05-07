@@ -1,5 +1,6 @@
 package you.chat;
 
+import javax.swing.*;
 import java.awt.*;
 
 
@@ -17,20 +18,19 @@ public class ClientWindow extends ClientPanel {
     //This function is a container to all the basics related to GUI:
     public void guiBasics(){
         //Setting the size:
-        super.setSize(400, 650);
+        frame.setSize(400, 650);
         //Setting the location:
-        super.setLocation(750, 50);
+        frame.setLocation(750, 50);
         //Changing the background color of the interface:
-        super.getContentPane().setBackground(Color.DARK_GRAY);
+        frame.getContentPane().setBackground(Color.DARK_GRAY);
         //Setting the layout to null initially will change it later:
-        super.setLayout(null);
-
+        frame.setLayout(null);
         //Using the createPanel function so that it instantiate:
         this.createPanel();
 
 
         //This disables our top minimize and close opt
-        setUndecorated(true);
+        frame.setUndecorated(true);
     }
 
 
@@ -39,6 +39,6 @@ public class ClientWindow extends ClientPanel {
         //using the guiBasics function that we created:
         this.guiBasics();
         //setting the visibility to true:
-        super.setVisible(true);
+        frame.setVisible(true);
     }
 }

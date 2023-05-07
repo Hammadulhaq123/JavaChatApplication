@@ -32,6 +32,9 @@ public class Server extends ServerWindow{
                     JPanel clientMessage = formatMessagePanel(msg);
                     //Creating a panel to set the alignment of incoming message to the left:
                     JPanel clientMessageLayout = new JPanel(new BorderLayout());
+                    clientMessageLayout.setBackground(new Color(105,105,105));
+                    clientMessage.setBackground(new Color(105,105,105));
+                    sendMessageLabel.setBackground(Color.darkGray);
                     clientMessageLayout.add(clientMessage, BorderLayout.LINE_START); //This will add the incoming mesage at the start
                     verticalBox.add(clientMessageLayout);
 

@@ -2,22 +2,31 @@ package you.chat;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.metal.MetalScrollBarUI;
+import javax.swing.plaf.multi.MultiScrollBarUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.DataOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class ClientPanel extends JFrame implements ActionListener {
+public class ClientPanel implements ActionListener {
+
+    static JFrame frame = new JFrame();
 
     //Creating userMessage text field globally so that we can take its value out in the action listener:
     JTextField userMessage;
     //Creating the message panel globally to access it in the action listener function:
-    JPanel messagePanel;
+    static JPanel messagePanel;
     //Creating a vertical box to align messages vertically:
-    Box verticalBox = Box.createVerticalBox();
+    static Box verticalBox = Box.createVerticalBox();
+
+    static DataOutputStream output;
+
+    static JLabel sendMessageLabel;
 
     //Function to create the top panel of the interface:
     public void topPanel(){
@@ -30,10 +39,10 @@ public class ClientPanel extends JFrame implements ActionListener {
         //Setting the layout and putting the top Panel at the top:
         topPanel.setBounds(0,0, 400, 50);
         //Adding the panel into the Gui:
-        add(topPanel);
+        frame.add(topPanel);
         /*----------------------------------------*/
         //Using ImageIcon class to convert the image into icons in our directory:
-        ImageIcon backImage = new ImageIcon(ClassLoader.getSystemResource("icons/3.png"));
+        ImageIcon backImage = new ImageIcon(ClassLoader.getSystemResource("icons/back.png"));
         //Using Image class to scale our image to our précised sizing:
         Image scaledBackImage = backImage.getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT);
         //Since we cannot set the scaled image directly to the JLabel therefore we have to convert into icon for that:
@@ -46,21 +55,21 @@ public class ClientPanel extends JFrame implements ActionListener {
         topPanel.add(backBtn);
         /*----------------------------------------*/
         //Using ImageIcon class to convert the image into icons in our directory:
-        ImageIcon userImage = new ImageIcon(ClassLoader.getSystemResource("icons/2.png"));
+        ImageIcon userImage = new ImageIcon(ClassLoader.getSystemResource("icons/user.png"));
         //Using Image class to scale our image to our précised sizing:
-        Image scaledUserImage = userImage.getImage().getScaledInstance(40,40,Image.SCALE_DEFAULT);
+        Image scaledUserImage = userImage.getImage().getScaledInstance(35,30,Image.SCALE_DEFAULT);
         //Since we cannot set the scaled image directly to the JLabel therefore we have to convert into icon for that:
         ImageIcon scaledUserImageIcon = new ImageIcon(scaledUserImage);
         //Adding the image to the topPanel:
         //for that we have to use JLabel and pass our image as an argument:
         JLabel userBtn = new JLabel(scaledUserImageIcon);
         //Now we are using our own layout for the image:
-        userBtn.setBounds(350, 4, 40,40);
+        userBtn.setBounds(360, 9, 35,30);
         topPanel.add(userBtn);
 
         /*----------------------------------------*/
         //Using ImageIcon class to convert the image into icons in our directory:
-        ImageIcon phoneImage = new ImageIcon(ClassLoader.getSystemResource("icons/phone.png"));
+        ImageIcon phoneImage = new ImageIcon(ClassLoader.getSystemResource("icons/phone2.png"));
         //Using Image class to scale our image to our précised sizing:
         Image scaledPhoneImage = phoneImage.getImage().getScaledInstance(25,25,Image.SCALE_DEFAULT);
         //Since we cannot set the scaled image directly to the JLabel therefore we have to convert into icon for that:
@@ -69,12 +78,12 @@ public class ClientPanel extends JFrame implements ActionListener {
         //for that we have to use JLabel and pass our image as an argument:
         JLabel phoneBtn = new JLabel(scaledPhoneImageIcon);
         //Now we are using our own layout for the image:
-        phoneBtn.setBounds(320, 13, 25,25);
+        phoneBtn.setBounds(330, 13, 25,25);
         topPanel.add(phoneBtn);
 
         /*----------------------------------------*/
         //Using ImageIcon class to convert the image into icons in our directory:
-        ImageIcon videoImage = new ImageIcon(ClassLoader.getSystemResource("icons/video.png"));
+        ImageIcon videoImage = new ImageIcon(ClassLoader.getSystemResource("icons/videocall.png"));
         //Using Image class to scale our image to our précised sizing:
         Image scaledVideoImage = videoImage.getImage().getScaledInstance(20,25,Image.SCALE_DEFAULT);
         //Since we cannot set the scaled image directly to the JLabel therefore we have to convert into icon for that:
@@ -83,7 +92,7 @@ public class ClientPanel extends JFrame implements ActionListener {
         //for that we have to use JLabel and pass our image as an argument:
         JLabel videoBtn = new JLabel(scaledVideoImageIcon);
         //Now we are using our own layout for the image:
-        videoBtn.setBounds(292, 13, 20,25);
+        videoBtn.setBounds(302, 13, 20,25);
         topPanel.add(videoBtn);
 
 
@@ -119,13 +128,52 @@ public class ClientPanel extends JFrame implements ActionListener {
     //Function to create the messagePanel:
     public void messagePanel(){
         messagePanel = new JPanel();
-        //changing the background of the top panel:
         messagePanel.setBackground(new Color(105,105,105));
+
+
+        JScrollPane scroller = new JScrollPane( messagePanel,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+        scroller.setComponentZOrder(scroller.getVerticalScrollBar(), 0);
+        scroller.setComponentZOrder(scroller.getViewport(), 1);
+        scroller.getVerticalScrollBar().setOpaque(false);
+
+        scroller.setLayout(new ScrollPaneLayout() {
+                                 @Override
+                                 public void layoutContainer(Container parent) {
+                                     JScrollPane scrollPane = (JScrollPane) parent;
+
+                                     Rectangle availR = scrollPane.getBounds();
+                                     availR.x = availR.y = 0;
+
+                                     Insets parentInsets = parent.getInsets();
+                                     availR.x = parentInsets.left;
+                                     availR.y = parentInsets.top;
+                                     availR.width -= parentInsets.left + parentInsets.right;
+                                     availR.height -= parentInsets.top + parentInsets.bottom;
+
+                                     Rectangle vsbR = new Rectangle();
+                                     vsbR.width = 5;
+                                     vsbR.height = availR.height;
+                                     vsbR.x = availR.x + availR.width - vsbR.width;
+                                     vsbR.y = availR.y;
+
+                                     if (viewport != null) {
+                                         viewport.setBounds(availR);
+                                     }
+                                     if (vsb != null) {
+                                         vsb.setVisible(true);
+                                         vsb.setBounds(vsbR);
+                                     }
+                                 }
+                                 });
+        scroller.getVerticalScrollBar().setUI(new MyScrollbarUI());
+        //changing the background of the top panel:
+        scroller.setBackground(new Color(105,105,105));
         //Setting the layout and putting the top Panel at the top:
-        messagePanel.setBounds(5,55, 390, 540);
-        messagePanel.setBorder(new EmptyBorder(10,10,10,10));
+        scroller.setBounds(5,55, 390, 540);
+        scroller.setBorder(new EmptyBorder(10,10,10,10));
         //Adding the panel into the Gui:
-        add(messagePanel);
+        frame.add(scroller);
     }
 
     //Function to create the sendPanel:
@@ -139,7 +187,7 @@ public class ClientPanel extends JFrame implements ActionListener {
         //Setting the layout and putting the top Panel at the top:
         sendPanel.setBounds(0,595, 400, 55);
         //Adding the panel into the Gui:
-        add(sendPanel);
+        frame.add(sendPanel);
 
         //Creating a TextField and Send Button inside the send Panel:
         userMessage = new JTextField();
@@ -161,33 +209,37 @@ public class ClientPanel extends JFrame implements ActionListener {
     }
     //This is just to override the abstract method of the class actionPerformed:
     public void actionPerformed(ActionEvent ae){
-        String sendMessage = userMessage.getText();
-        messagePanel.setLayout(new BorderLayout());
-        JPanel sendMessagePanel = formatMessagePanel(sendMessage);
+        try {
+            String sendMessage = userMessage.getText();
+            messagePanel.setLayout(new BorderLayout());
+            JPanel sendMessagePanel = formatMessagePanel(sendMessage);
 
-        JPanel rightSide = new JPanel(new BorderLayout());
-        rightSide.add(sendMessagePanel, BorderLayout.LINE_END);
+            JPanel rightSide = new JPanel(new BorderLayout());
+            rightSide.add(sendMessagePanel, BorderLayout.LINE_END);
 
-        verticalBox.add(rightSide);
-        verticalBox.add(Box.createVerticalStrut(15));
-        rightSide.setBackground(new Color(105,105,105));
-        sendMessagePanel.setBackground(new Color(105,105,105));
+            verticalBox.add(rightSide);
+            verticalBox.add(Box.createVerticalStrut(15));
 
+            messagePanel.add(verticalBox, BorderLayout.PAGE_START);
+            rightSide.setBackground(new Color(105, 105, 105));
+            sendMessagePanel.setBackground(new Color(105, 105, 105));
+            output.writeUTF(sendMessage);
 
-        messagePanel.add(verticalBox, BorderLayout.PAGE_START);
+            frame.repaint();
+            frame.invalidate();
+            frame.validate();
 
-        repaint();
-        invalidate();
-        validate();
-
-        userMessage.setText("");
+            userMessage.setText("");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
     public static JPanel formatMessagePanel(String message){
         JPanel messagePanel = new JPanel();
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
 
 
-        JLabel sendMessageLabel = new JLabel("<html><p style= \" width: 150px; \">"+message+"</p></html>");
+        sendMessageLabel = new JLabel("<html><p style= \" width: 150px; \">"+message+"</p></html>");
         sendMessageLabel.setBackground(new Color(10,102,194));
         sendMessageLabel.setForeground(Color.WHITE);
         //Without setting setOpaque to true we cannot change the background in this case!
